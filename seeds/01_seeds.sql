@@ -1,5 +1,5 @@
 -- insert users --
-INSERT INTO users (name, email_address, password)
+INSERT INTO users (name, email, password)
 VALUES
 ('Shiro', 'shiro@g.mail', '$2a$10$FB/BOAVhpuLvpOREQVmvmezD4ED/.JBIDRh70tGevYzYzQgFId2u.'),
 ('Oreo', 'oreo@meow.ca', '$2a$10$FB/BOAVhpuLvpOREQVmvmezD4ED/.JBIDRh70tGevYzYzQgFId2u.'),
