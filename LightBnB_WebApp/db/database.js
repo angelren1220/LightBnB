@@ -92,7 +92,7 @@ const getAllReservations = function(guest_id, limit = 10) {
       ORDER BY reservations.start_date
       LIMIT $2;
       `,
-      [ guest_id, limit || 10 ]
+      [guest_id, limit || 10]
     )
     .then((result) => {
       return result.rows;
@@ -122,45 +122,45 @@ const getAllProperties = (options, limit = 10) => {
   `;
 
   // handle options for query string
-  if(options.city) {
+  if (options.city) {
     queryParams.push(`%${options.city}%`);
     queryString += ` WHERE city LIKE $${queryParams.length}\n`;
   }
 
-  if(options.owner_id) {
+  if (options.owner_id) {
     queryParams.push(Number(options.owner_id));
-    queryString += 
-    `AND owner_id = $${queryParams.length}\n`;
+    queryString +=
+      `AND owner_id = $${queryParams.length}\n`;
   }
 
-  if(options.minimum_price_per_night) {
+  if (options.minimum_price_per_night) {
     queryParams.push(Number(options.minimum_price_per_night) * 100);
-    queryString += 
-    `AND cost_per_night >= $${queryParams.length}\n`;
+    queryString +=
+      `AND cost_per_night >= $${queryParams.length}\n`;
   }
 
-  if(options.maximum_price_per_night) {
+  if (options.maximum_price_per_night) {
     queryParams.push(Number(options.maximum_price_per_night) * 100);
-    queryString += 
-    `AND cost_per_night <= $${queryParams.length}\n`;
+    queryString +=
+      `AND cost_per_night <= $${queryParams.length}\n`;
   }
 
-  queryString += 
-  `GROUP BY properties.id\n`;
+  queryString +=
+    `GROUP BY properties.id\n`;
 
-  if(options.minimum_rating) {
+  if (options.minimum_rating) {
     queryParams.push(Number(options.minimum_rating));
-    queryString += 
-    `HAVING AVG(property_reviews.rating) >= $${queryParams.length}\n`;
+    queryString +=
+      `HAVING AVG(property_reviews.rating) >= $${queryParams.length}\n`;
   }
 
-  queryString += 
-  `ORDER BY cost_per_night\n`;
+  queryString +=
+    `ORDER BY cost_per_night\n`;
 
   queryParams.push(limit);
-  queryString += 
-  `LIMIT $${queryParams.length};`;
-  
+  queryString +=
+    `LIMIT $${queryParams.length};`;
+
   // handle result
   return pool
     .query(queryString, queryParams)
@@ -177,11 +177,33 @@ const getAllProperties = (options, limit = 10) => {
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
-const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+const addProperty = (property) => {
+  const queryParams = [property.owner_id, property.title, property.description, property.thumbnail_photo_url, property.cover_photo_url, property.cost_per_night, property.parking_spaces, property.number_of_bathrooms, property.number_of_bedrooms, property.country, property.street, property.city, property.province, property.post_code];
+
+  let queryString =
+    `INSERT INTO properties
+    (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, parking_spaces, number_of_bathrooms, number_of_bedrooms, country, street, city, province, post_code)
+    VALUES(`;
+
+  let values = [];
+  for (let i = 1; i <= queryParams.length; i++) {
+    values.push(`$${i}`);
+  }
+  values = values.join(`, `);
+  queryString += values;
+
+  queryString += `) RETURNING *;`;
+
+  console.log(queryString, queryParams);
+
+  return pool.
+    query(queryString, queryParams)
+    .then(() => {
+      return "Add new user successfully";
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 };
 
 module.exports = {
